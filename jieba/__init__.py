@@ -158,6 +158,10 @@ class Tokenizer(object):
                 except KeyError:
                     pass
 
+            # import pprint
+            # pp = pprint.PrettyPrinter(indent=4)
+            # pp.pprint(self.FREQ)
+
             self.initialized = True
             default_logger.debug(
                 "Loading model cost %.3f seconds." % (time.time() - t1))
@@ -179,18 +183,25 @@ class Tokenizer(object):
         self.check_initialized()
         DAG = {}
         N = len(sentence)
-        for k in xrange(N):
+        for k in xrange(N):  # index
+            # print(k)
             tmplist = []
             i = k
             frag = sentence[k]
+            # print(frag)
+            # 找到當前 index 在字典中的最大長度的字的集合
             while i < N and frag in self.FREQ:
                 if self.FREQ[frag]:
                     tmplist.append(i)
                 i += 1
                 frag = sentence[k:i + 1]
+            # 如果字典中不存在
             if not tmplist:
                 tmplist.append(k)
             DAG[k] = tmplist
+        import pprint
+        pp = pprint.PrettyPrinter()
+        pp.pprint(DAG)
         return DAG
 
     def __cut_all(self, sentence):
@@ -293,22 +304,29 @@ class Tokenizer(object):
             cut_block = self.__cut_DAG
         else:
             cut_block = self.__cut_DAG_NO_HMM
+        # 匹配得到中文字符
+        # "我来到北京清华大学, 213123, 我来到北京清华大学"
+        # ['', '我来到北京清华大学', ', ', '213123', ', ', '我来到北京清华大学', '']
         blocks = re_han.split(sentence)
+        print(blocks)
         for blk in blocks:
             if not blk:
                 continue
-            if re_han.match(blk):
-                for word in cut_block(blk):
+            print(re_han.match(blk))
+            if re_han.match(blk): # 滿足正則的走進這裏
+                for word in cut_block(blk):  # 最關鍵的算法在 cut_block 中
                     yield word
-            else:
+            else:  # 不滿足正則的走進這裏，例如 ','
+                print('run here ' + str(blk))
+                # 換行符切分
                 tmp = re_skip.split(blk)
                 for x in tmp:
-                    if re_skip.match(x):
+                    if re_skip.match(x):  # 如果是換行符，要原樣返回
                         yield x
-                    elif not cut_all:
+                    elif not cut_all:  # 否則不是換行符，也不是全模式，把 x 裏面一個一個返回
                         for xx in x:
                             yield xx
-                    else:
+                    else:  # 如果是全模式，把 x 整體返回
                         yield x
 
     def cut_for_search(self, sentence, HMM=True):
