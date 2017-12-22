@@ -174,6 +174,7 @@ class Tokenizer(object):
     def calc(self, sentence, DAG, route):
         N = len(sentence)
         # route 里面的两个成员分别代表什么呢?
+
         route[N] = (0, 0)
         logtotal = log(self.total)
         for idx in xrange(N - 1, -1, -1):
@@ -184,6 +185,9 @@ class Tokenizer(object):
             # 取出来之后, 进行词典查频, 有可能查不到频率,这时  or 1 就是查不到的时候就是 1, 就令这个词频率强制为 1
             # 之后对词频进行 log, 再减去 logtotal, 对数减, 实际上相当于做了触发, 词频 / 总词频, 得到了频率
             # 再乘以什么呢?
+            # route[x+1][0] 表示 词路径[x+1,N-1]的最大概率对数,
+            # x 是 value list 里面的值
+            # max 里面的参数时一整个 tuple (概率, x)
             route[idx] = max((log(self.FREQ.get(sentence[idx:x + 1]) or 1) - logtotal + route[x + 1][0], x) for x in DAG[idx])
 
     def calc2(self, sentence, DAG, route):
