@@ -193,6 +193,7 @@ class Tokenizer(object):
     def calc2(self, sentence, DAG, route):
         print("calc2")
         N = len(sentence)
+        print("N = %d" % N)
         route[N] = (0, 0)
         logtotal = log(self.total)  # 总词频
         for idx in xrange(N - 1, -1, -1):
@@ -202,6 +203,7 @@ class Tokenizer(object):
                 freq = self.FREQ.get(sentenceX) or 1
                 frequency = log(freq) - logtotal + route[x + 1][0]
                 frequenciesPair.append((frequency, x))
+                print("idx = %d, x = %d, frequency = %f" % (idx, x, frequency))
             route[idx] = max(frequenciesPair)
 
     def get_DAG(self, sentence):
