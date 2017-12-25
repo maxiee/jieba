@@ -187,21 +187,22 @@ class Tokenizer(object):
             # 再乘以什么呢?
             # route[x+1][0] 表示 词路径[x+1,N-1]的最大概率对数,
             # x 是 value list 里面的值
-            # max 里面的参数时一整个 tuple (概率, x)
+            # max 里面的参数是一个 tuple (概率, x), 当传入 tuple 时, max 会对第一个参数进行排序, 这也是为什么概率放在前, 序号放在后的原因
             route[idx] = max((log(self.FREQ.get(sentence[idx:x + 1]) or 1) - logtotal + route[x + 1][0], x) for x in DAG[idx])
 
     def calc2(self, sentence, DAG, route):
+        print("calc2")
         N = len(sentence)
         route[N] = (0, 0)
         logtotal = log(self.total)  # 总词频
-        # xrange 与 range 功能完全相同, 所不同的是返回不是一个词组, 而是一个生成器
-        # 起始值是 N - 1, 结束值是 -1, 递减值是 -1
-        # 实际返回值是 N - 1, N - 2, ... , 0.
         for idx in xrange(N - 1, -1, -1):
+            frequenciesPair = []
             for x in DAG[idx]:  #遍历 DAG
-                sentencs = sentence[idx: x + 1]
-                freq = self.FREQ.get(sentence[idx: x + 1] or 1)
-            pass
+                sentenceX = sentence[idx: x + 1]
+                freq = self.FREQ.get(sentenceX) or 1
+                frequency = log(freq) - logtotal + route[x + 1][0]
+                frequenciesPair.append((frequency, x))
+            route[idx] = max(frequenciesPair)
 
     def get_DAG(self, sentence):
         self.check_initialized()
@@ -267,7 +268,7 @@ class Tokenizer(object):
     def __cut_DAG(self, sentence):
         DAG = self.get_DAG(sentence)
         route = {}
-        self.calc(sentence, DAG, route)
+        self.calc2(sentence, DAG, route)
         x = 0
         buf = ''
         N = len(sentence)
