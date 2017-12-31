@@ -199,11 +199,14 @@ class Tokenizer(object):
         for idx in xrange(N - 1, -1, -1):
             frequenciesPair = []
             for x in DAG[idx]:  #遍历 DAG
+                print("idx = %d, x = %d" % (idx, x))
                 sentenceX = sentence[idx: x + 1]
                 freq = self.FREQ.get(sentenceX) or 1
+                print(sentenceX + ", freq = " + str(freq))
                 frequency = log(freq) - logtotal + route[x + 1][0]
                 frequenciesPair.append((frequency, x))
-                print("idx = %d, x = %d, frequency = %f" % (idx, x, frequency))
+                print(frequency, x)
+            print("route[%d] = " % idx + str(max(frequenciesPair)))
             route[idx] = max(frequenciesPair)
 
     def get_DAG(self, sentence):
@@ -247,7 +250,7 @@ class Tokenizer(object):
     def __cut_DAG_NO_HMM(self, sentence):
         DAG = self.get_DAG(sentence)
         route = {}
-        self.calc(sentence, DAG, route)
+        self.calc2(sentence, DAG, route)
         x = 0
         N = len(sentence)
         buf = ''
